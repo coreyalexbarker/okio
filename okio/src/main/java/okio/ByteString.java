@@ -115,6 +115,12 @@ public class ByteString implements Serializable, Comparable<ByteString> {
     return result != null ? result : (utf8 = new String(data, Util.UTF_8));
   }
 
+  /** Constructs a new {@code CharSequence} by decoding the bytes as {@code UTF-8}. */
+  public CharSequence utf8CharSequence() {
+	  CharSequence seq = new String(data, Util.UTF_8);
+	  return seq;
+  }
+  
   /** Constructs a new {@code String} by decoding the bytes using {@code charset}. */
   public String string(Charset charset) {
     if (charset == null) throw new IllegalArgumentException("charset == null");
