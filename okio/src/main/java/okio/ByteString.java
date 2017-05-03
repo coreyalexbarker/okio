@@ -15,16 +15,15 @@
  */
 package okio;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
+import sun.nio.cs.ArrayDecoder;
+
+import java.io.*;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -116,9 +115,21 @@ public class ByteString implements Serializable, Comparable<ByteString> {
   }
 
   /** Constructs a new {@code CharSequence} by decoding the bytes as {@code UTF-8}. */
-  public CharSequence utf8CharSequence() {
-	  CharSequence seq = new String(data, Util.UTF_8);
-	  return seq;
+  public CharSequence utf8CharSequence() throws UnsupportedEncodingException {
+    Charset cs = Charset.forName("UTF-8");
+    CharsetDecoder cd = cs.newDecoder()
+                          .onMalformedInput(CodingErrorAction.REPLACE)
+                          .onUnmappableCharacter(CodingErrorAction.REPLACE);
+    int en = (int)(data.length * (double)cd.maxCharsPerByte());
+    char[] seq = new char[en];
+    if (data.length == 0)
+      return CharBuffer.wrap(seq);
+    if (cd instanceof ArrayDecoder) {
+      int clen = ((ArrayDecoder) cd).decode(data, 0, data.length, seq);
+      if (clen != seq.length)
+        seq = Arrays.copyOf(seq, clen);
+    } else throw new UnsupportedEncodingException("cd not of type ArrayDecoder");
+    return CharBuffer.wrap(seq);
   }
   
   /** Constructs a new {@code String} by decoding the bytes using {@code charset}. */
