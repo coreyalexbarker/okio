@@ -16,7 +16,13 @@ public class ByteCursor {
 
   public int getIndex() { return idxAnchor; }
 
-  public void setIndex(int idx) { this.idxAnchor = idx; }
+  public void setIndex(int idx) {
+    if (idx >= 0) {
+      this.idxAnchor = idx;
+    } else {
+      this.idxAnchor = 0;
+    }
+  }
 
   public void reset() { setIndex(0); }
 
@@ -45,7 +51,13 @@ public class ByteCursor {
   }
 
   public byte byteAt(int i) {
+    if (i >= (data.length - 1)) throw new IndexOutOfBoundsException("i > data.length");
     return data[i];
+  }
+
+  public byte nextByte() {
+    if (idxAnchor++ >= (data.length - 1)) throw new IndexOutOfBoundsException("end of array");
+    return data[idxAnchor];
   }
 
   // getSubArray returns an inclusive sub array
